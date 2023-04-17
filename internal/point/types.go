@@ -1,6 +1,8 @@
 package point
 
-import lua "github.com/yuin/gopher-lua"
+import (
+	lua "github.com/yuin/gopher-lua"
+)
 
 const (
 	luaBytesTypeName = "bytes"

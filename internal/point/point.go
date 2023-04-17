@@ -55,9 +55,13 @@ func newPoint(L *lua.LState) int {
 				switch k {
 				case "time":
 					ptopts = append(ptopts, point.WithTime(getTimeOpt(v2)))
+
+				default:
+					// TODO: add more options for point
+					log.Printf("ignore option %s", k)
 				}
 			}
-		}) // TODO: extract options of the point
+		})
 	}
 
 	var ptkvs point.KVs

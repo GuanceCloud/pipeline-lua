@@ -14,6 +14,6 @@ Currently the first release is WIP.
 
 # Next TODO
 
-- [WIP] Add basic point operation support in Lua.
+- [  ] Add basic point operation support in Lua(WIP)
 - [  ] Benchmark on Lua to handle point
 - [  ] Add HTTP request to send point to datakit
