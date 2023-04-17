@@ -11,3 +11,9 @@ This is a side-project to help Lua user to write Datakit pipeline.
 # Status
 
 Currently the first release is WIP.
+
+# Next TODO
+
+- [WIP] Add basic point operation support in Lua.
+- [  ] Benchmark on Lua to handle point
+- [  ] Add HTTP request to send point to datakit

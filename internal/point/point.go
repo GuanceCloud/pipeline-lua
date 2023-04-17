@@ -2,7 +2,7 @@ package point
 
 import (
 	"log"
-	"reflect"
+	"time"
 
 	"github.com/GuanceCloud/cliutils/point"
 	lua "github.com/yuin/gopher-lua"
@@ -17,15 +17,28 @@ func registerPointType(L *lua.LState) {
 	// static attributes
 	L.SetField(t, "new", L.NewFunction(newPoint))
 	L.SetField(t, "int", L.NewFunction(newInt))
+	L.SetField(t, "uint", L.NewFunction(newUint))
 	L.SetField(t, "bytes", L.NewFunction(newBytes))
+	L.SetField(t, "tag", L.NewFunction(newTag))
 
 	// methods
 	L.SetField(t, "__index", L.SetFuncs(L.NewTable(), pointMethods))
 }
 
 var pointMethods = map[string]lua.LGFunction{
-	"get": pointGetKeyValue,
-	"set": pointSetKeyValues,
+	"get":       pointGetKeyValue,
+	"set":       pointSetKeyValues,
+	"set_tags":  pointSetTags,
+	"lineproto": pointLineProto,
+}
+
+func getTimeOpt(v lua.LValue) time.Time {
+	switch x := v.(type) {
+	case lua.LNumber:
+		return time.Unix(0, int64(x))
+	default:
+		return time.Unix(0, 0)
+	}
 }
 
 func newPoint(L *lua.LState) int {
@@ -33,11 +46,21 @@ func newPoint(L *lua.LState) int {
 	kvs := L.CheckTable(2)
 	opts := L.CheckTable(3)
 
+	var ptopts []point.Option
+
 	if opts != nil {
-		opts.ForEach(nil) // TODO: extract options of the point
+		opts.ForEach(func(v1, v2 lua.LValue) {
+			switch k := v1.(type) {
+			case lua.LString:
+				switch k {
+				case "time":
+					ptopts = append(ptopts, point.WithTime(getTimeOpt(v2)))
+				}
+			}
+		}) // TODO: extract options of the point
 	}
 
-	pt := point.NewPointV2([]byte(name), nil)
+	var ptkvs point.KVs
 
 	kvs.ForEach(func(v1, v2 lua.LValue) {
 		var (
@@ -45,6 +68,7 @@ func newPoint(L *lua.LState) int {
 			value any
 		)
 
+		isTag := false
 		switch x := v1.(type) {
 		case lua.LString:
 			key = string(x)
@@ -60,14 +84,30 @@ func newPoint(L *lua.LState) int {
 			value = string(x)
 		case lua.LBool:
 			value = bool(x)
+		case *lua.LNilType:
+			value = nil
+
+		case *lua.LUserData:
+			switch y := x.Value.(type) {
+			case Int:
+				value = int64(y)
+			case Uint:
+				value = uint64(y)
+			case Bytes:
+				value = []byte(y)
+			case Tag:
+				value = []byte(y)
+				isTag = true
+			}
 		default:
 			log.Printf("ignore val %v", v2)
 			return
 		}
 
-		log.Printf("add kv %q:%v", key, value)
-		pt.Add([]byte(key), value)
+		ptkvs = ptkvs.Add([]byte(key), value, isTag, false)
 	})
+
+	pt := point.NewPointV2([]byte(name), ptkvs, ptopts...)
 
 	ud := L.NewUserData()
 	ud.Value = pt
@@ -83,89 +123,4 @@ func checkPoint(L *lua.LState) *point.Point {
 	}
 	L.ArgError(1, "point expected")
 	return nil
-}
-
-func pointGetKeyValue(L *lua.LState) int {
-	p := checkPoint(L)
-
-	if L.GetTop() != 2 {
-		L.ArgError(1, "expect key name")
-		return 0
-	}
-
-	key := []byte(L.CheckString(2))
-
-	log.Printf("try get key %q...", key)
-
-	v := p.Get(key)
-
-	switch x := v.(type) {
-	case int64:
-		L.Push(lua.LNumber(x))
-	case bool:
-		L.Push(lua.LBool(x))
-	case float64:
-		L.Push(lua.LNumber(x))
-	case []byte:
-		L.Push(lua.LString(x))
-	case uint64:
-		L.Push(lua.LNumber(x))
-	case nil:
-		L.Push(lua.LNil)
-	default: // TODO: other types not support
-		log.Printf("get value type %q, return nothing",
-			reflect.TypeOf(v).String())
-		return 0
-	}
-	return 1
-}
-
-func pointSetKeyValues(L *lua.LState) int {
-	p := checkPoint(L)
-
-	if L.GetTop() != 2 {
-		L.ArgError(1, "expect key alue table")
-		return 0
-	}
-
-	force := L.CheckBool(3)
-
-	t := L.CheckTable(1)
-	t.ForEach(func(k, v lua.LValue) {
-		var (
-			key []byte
-			val any
-		)
-
-		switch x := k.(type) {
-		case lua.LString:
-			key = []byte(string(x))
-		default:
-			log.Printf("ignore key %v", k)
-			return
-		}
-
-		switch x := v.(type) {
-		case lua.LBool:
-			val = bool(x)
-		case lua.LNumber:
-			val = float64(x)
-		case lua.LString:
-			val = string(x)
-		default: // ignore other types
-
-			log.Printf("ignore val %v", v)
-			return
-		}
-
-		log.Printf("add kv: %q: %v", key, val)
-
-		if force {
-			p.MustAdd(key, val)
-		} else {
-			p.Add(key, val)
-		}
-	})
-
-	return 0
 }
