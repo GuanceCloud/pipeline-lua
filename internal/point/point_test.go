@@ -21,7 +21,7 @@ local log = require("log")
 local info = log.new()
 
 info:set_prefix("Lua > [INFO] ")
-info:set_flags({data=true, time=true})
+info:set_flags({date=true, time=true})
 
 kvs  = { f1 = 1.1, f2 = "abc" }
 p = point.new("test", kvs, {time=0})  -- with timestamp 0
@@ -45,7 +45,7 @@ local log = require("log")
 local info = log.new()
 
 info:set_prefix("Lua > [INFO] ")
-info:set_flags({data=true, time=true})
+info:set_flags({date=true, time=true})
 
 kvs  = { f1 = 1, f2 = "abc", }
 p = point.new("test", kvs, {time=1}) 
@@ -71,7 +71,7 @@ local log = require("log")
 local info = log.new()
 
 info:set_prefix("Lua > [INFO] ")
-info:set_flags({data=true, time=true})
+info:set_flags({date=true, time=true})
 
 kvs  = { f1 = 1, f2 = "abc", t1= point.tag("v1") }
 p = point.new("test", kvs, {time=1}) 
@@ -95,7 +95,7 @@ local log = require("log")
 local info = log.new()
 
 info:set_prefix("Lua > [INFO] ")
-info:set_flags({data=true, time=true})
+info:set_flags({date=true, time=true})
 
 kvs  = { f1 = 1, f2 = "abc", }
 p = point.new("test", kvs, {time = 123}) 
@@ -118,7 +118,7 @@ assert(p:lineproto() == 'test f1=1,f2="abc" 123')
 local log = require("log")
 local info = log.new()
 info:set_prefix("lua > [INFO]")
-info:set_flags({data=true, time=true})
+info:set_flags({date=true, time=true})
 
 kvs = { f1=point.int(1), f2 = point.bytes('abc'), f3="xyz" }
 p = point.new("test", kvs, {time = 456})
@@ -138,7 +138,7 @@ assert(p:lineproto() == 'test f1=1i,f2="abc",f3="xyz" 456')
 local log = require("log")
 local info = log.new()
 info:set_prefix("lua > [INFO]")
-info:set_flags({data=true, time=true})
+info:set_flags({date=true, time=true})
 
 p = point.new("test", {}, {time = 456})
 p:set({

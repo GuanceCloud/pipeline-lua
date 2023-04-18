@@ -112,12 +112,16 @@ func newPoint(L *lua.LState) int {
 	})
 
 	pt := point.NewPointV2([]byte(name), ptkvs, ptopts...)
+	L.Push(luaPoint(L, pt))
+	return 1
+}
 
+func luaPoint(L *lua.LState, pt *point.Point) *lua.LUserData {
 	ud := L.NewUserData()
 	ud.Value = pt
 	L.SetMetatable(ud, L.GetTypeMetatable(luaPointTypeName))
-	L.Push(ud)
-	return 1
+
+	return ud
 }
 
 func checkPoint(L *lua.LState) *point.Point {
