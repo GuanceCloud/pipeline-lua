@@ -14,9 +14,28 @@ func BenchmarkGrok(b *T.B) {
 
 	cases := []struct {
 		name, ls string
+		pts      int
 	}{
 		{
-			name: "grok-year",
+			name: "10-pts-grok-year",
+			pts:  10,
+			ls: `
+g = grok.new("%{YEAR:year}")
+
+function main(pts)
+	for i, pt in pairs(pts) do
+		msg = pt:get("message")
+		res = g:grok(msg)
+		pt:set(res, false)
+	end
+
+	return pts
+end`,
+		},
+
+		{
+			name: "1000-pts-grok-year",
+			pts:  1000,
 			ls: `
 g = grok.new("%{YEAR:year}")
 
@@ -35,12 +54,11 @@ end`,
 	for _, c := range cases {
 		L := lua.NewState()
 
-		libs.Preload(L)
 		RegisterTypes(L)
 		luapt.RegisterType(L)
 
 		assert.NoError(b, L.DoString(c.ls))
-		pts := point.NewRander(point.WithRandText(3)).Rand(1000)
+		pts := point.NewRander(point.WithRandText(3)).Rand(c.pts)
 
 		b.Run(c.name, func(b *T.B) {
 			for i := 0; i < b.N; i++ {
@@ -50,7 +68,6 @@ end`,
 
 		L.Close()
 	}
-
 }
 
 func TestGrok(t *T.T) {
