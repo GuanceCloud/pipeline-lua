@@ -1,10 +1,11 @@
-module github/GuanceCloud/pipeline-lua
+module github.com/GuanceCloud/pipeline-lua
 
 go 1.18
 
 require (
-	github.com/GuanceCloud/cliutils v0.0.0-20230412030948-a4681b065ee5
-	github.com/stretchr/testify v1.8.1
+	github.com/GuanceCloud/cliutils v0.1.1
+	github.com/GuanceCloud/grok v1.1.3
+	github.com/stretchr/testify v1.8.2
 	github.com/vadv/gopher-lua-libs v0.4.1
 	github.com/yuin/gopher-lua v1.1.0
 )
@@ -40,6 +41,7 @@ require (
 	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/rs/xid v1.2.1 // indirect
 	github.com/satori/go.uuid v1.2.0 // indirect
+	github.com/spf13/cast v1.5.0 // indirect
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	github.com/yuin/gluamapper v0.0.0-20150323120927-d836955830e7 // indirect
 	golang.org/x/net v0.7.0 // indirect
